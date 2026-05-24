@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Streak Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .tracker-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .counter {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 20px 0;
+        }
+        .status-text {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            min-height: 40px;
+        }
+        .btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="tracker-card">
+    <h2>Daily Tracker</h2>
+    <div class="counter" id="streakDisplay">0</div>
+    <div class="status-text" id="statusMessage">Checking status...</div>
+    <button class="btn" id="decreaseBtn">Oops, I missed a day (-1)</button>
+</div>
+
+<script>
+    // DOM Elements
+    const streakDisplay = document.getElementById('streakDisplay');
+    const statusMessage = document.getElementById('statusMessage');
+    const decreaseBtn = document.getElementById('decreaseBtn');
+
+    // Milliseconds in 24 hours
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; 
+
+    // Load data from LocalStorage (or set defaults)
+    let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 19;
+    let lastIncrementTime = parseInt(localStorage.getItem('lastIncrementTime')) || 0;
+
+    function updateUI(message) {
+        streakDisplay.textContent = currentStreak;
+        if (message) {
+            statusMessage.textContent = message;
+        }
+    }
+
+    function checkDailyLogin() {
+        const now = Date.now();
+        
+        // If it's the first time, or if 24 hours have passed since the last increment
+        if (lastIncrementTime === 0 || (now - lastIncrementTime) >= TWENTY_FOUR_HOURS) {
+            currentStreak++;
+            lastIncrementTime = now; // Reset the 24-hour window anchor
+            
+            localStorage.setItem('currentStreak', currentStreak);
+            localStorage.setItem('lastIncrementTime', lastIncrementTime);
+            
+            updateUI("Welcome back! Your streak has increased.");
+        } else {
+            // Calculate remaining time for the user's reference
+            const timePassed = now - lastIncrementTime;
+            const timeLeft = TWENTY_FOUR_HOURS - timePassed;
+            const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
+            
+            updateUI(`You've already checked in today. Next increase available in ~${hoursLeft}h.`);
+        }
+    }
+
+    // Manual decrease button logic
+    decreaseBtn.addEventListener('click', () => {
+        if (currentStreak > 0) {
+            currentStreak--;
+            localStorage.setItem('currentStreak', currentStreak);
+            
+            // Adjust the window so they can log in again if they genuinely missed it
+            // This pushes the "last login" back by 24 hours
+            lastIncrementTime = lastIncrementTime - TWENTY_FOUR_HOURS;
+            localStorage.setItem('lastIncrementTime', lastIncrementTime);
+            
+            updateUI("Streak adjusted downward.");
+        } else {
+            statusMessage.textContent = "Streak is already at 0!";
+        }
+    });
+
+    // Run the check immediately when the page loads
+    checkDailyLogin();
+</script>
+
+</body>
+</html>
