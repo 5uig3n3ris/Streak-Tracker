@@ -74,7 +74,7 @@
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; 
 
     // Load data from LocalStorage (or set defaults)
-    let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 19;
+    let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
     let lastIncrementTime = parseInt(localStorage.getItem('lastIncrementTime')) || 0;
 
     function updateUI(message) {
